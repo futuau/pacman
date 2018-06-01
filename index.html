@@ -1,0 +1,204 @@
+<html>
+
+<head>
+    <meta charset="utf8">
+    <title>Pac-Man . 吃豆游戏</title>
+    <link rel="shortcut icon" href="favicon.png">
+    <link rel="stylesheet" href="index.css">
+    <script>
+    if (window.top != window.self) {
+        window.top.location = self.location.href;
+    }
+    </script>
+</head>
+
+<body>
+	<div class="noExtension" id="noExtension">
+        提示: 请先安装
+        <a target="_blank" href="https://github.com/ChengOrangeJu/WebExtensionWallet">WebExtensionWallet</a> 再进行游戏
+    </div>
+    <div style="position: relative;top: 2rem;left: 2rem;font-size: 1rem;float: left;height: 90%;width: 500px;" class="hidewhenplaying" id="app" v-clock>
+        <strong><u><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">分数排行榜</font></font></u></strong>
+        <div id="worldrecordsholder">
+            <table style="font-size:.6em;">
+                <tbody>
+                    <tr >
+                        <td>
+                            <font style="vertical-align: inherit;">
+                                <font style="vertical-align: inherit;">排名</font>
+                            </font>
+                        </td>
+                        <td>
+                            <font style="vertical-align: inherit;">
+                                <font style="vertical-align: inherit;">玩家</font>
+                            </font>
+                        </td>
+                        <td>
+                            <font style="vertical-align: inherit;">
+                                <font style="vertical-align: inherit;">分数</font>
+                            </font>
+                        </td>
+                    </tr>
+                    <tr v-for="(item,index) in list">
+                        <td>
+                            <font style="vertical-align: inherit;">
+                                <font style="vertical-align: inherit;">{{index+1}}</font>
+                            </font>
+                        </td>
+                        <td>
+                            <font style="vertical-align: inherit;">
+                                <font style="vertical-align: inherit;">{{item.value.split(':')[1]}}</font>
+                            </font>
+                        </td>
+                        <td>
+                            <font style="vertical-align: inherit;color:red; ">
+                                <font style="vertical-align: inherit;">{{item.value.split(':')[0]}}</font>
+                            </font>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="wrapper">
+        <canvas id="canvas" width="960" height="640">不支持画布</canvas>
+        <p>按［空格］暂停或继续</p>
+        <button class="active" id="uploadScore" onclick="uploadScore">
+            <font style="vertical-align: inherit;">
+                <font style="vertical-align: inherit;font-size: 1rem;">上传分数PK</font>
+            </font>
+        </button>
+    </div>
+    <script src="js/jquery-3.3.1.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/nebPay.js" type="text/javascript" charset="utf-8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="game.js"></script>
+    <script src="index.js"></script>
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <script>
+$(document).ready(function() {
+    var NebPay = require("nebpay"); //https://github.com/nebulasio/nebPay
+    var nebPay = new NebPay();
+
+    //检查扩展是否已安装
+    //如果安装了扩展，var“webExtensionWallet”将被注入到web页面中1
+
+    setTimeout(function() {
+        if (typeof(webExtensionWallet) === "undefined") {
+        $("#noExtension").show();
+    }
+}, 0);
+
+    var dappAddress = "n1z1hDSBbFxSG4DAvJ8qhwPAV2cR6a1uvCe";
+    var initKey = '';
+    var oldSize = 0;
+    var page = 0;
+    var app = new Vue({
+        el: '#app',
+        data: {
+            list: []
+        },
+        methods: {
+            formatDateTime: function(theDate) {
+                if (!theDate || theDate == null || theDate.split(':').length != 2) {
+                    return ' ';
+                }
+                theDate = theDate.split(':')[1];
+                if (theDate == '') {
+                    return '';
+                }
+                var date = new Date();
+                date.setTime(theDate);
+                var y = date.getFullYear();
+                var m = date.getMonth() + 1;
+                m = m < 10 ? ('0' + m) : m;
+                var d = date.getDate();
+                d = d < 10 ? ('0' + d) : d;
+                var h = date.getHours();
+                h = h < 10 ? ('0' + h) : h;
+                var minute = date.getMinutes();
+                var second = date.getSeconds();
+                minute = minute < 10 ? ('0' + minute) : minute;
+                second = second < 10 ? ('0' + second) : second;
+                return y + '-' + m + '-' + d + ' ' + h + ':' + minute + ':' + second;
+            },
+            getContent: function(text) {
+                if (text) {
+                    return text.split(':')[0];
+                } else {
+                    return ' ';
+                }
+
+            },
+            reply: function() {
+                layer.msg('玩命开发中...');
+            }
+        }
+    })
+    setInterval(function() {
+        getScoreList(0);
+    }, 15000);
+    getScoreList(0);
+    // 获取分数列表
+    function getScoreList(page) {
+        initKey = 'wish:' + new Date().getTime() + RndNum(3);
+        var value = "0";
+        var callArgs = "[10," + page * 10 + "]"; //in the form of ["args"]
+        nebPay.simulateCall(dappAddress, value, "scoreList", callArgs, { //使用nebpay的simulateCall接口去执行get查询, 模拟执行.不发送交易,不上链
+            listener: cbSearch //指定回调函数
+        });
+    }
+
+    function cbSearch(resp) {
+        console.log(resp)
+        if (!resp.result) return;
+        var result = eval(JSON.parse(resp.result));
+        console.log(result)
+        if (result !== 'null') {
+            Vue.set(app, 'list', result)
+        }
+    }
+
+    // 提交分数
+    function uploadScore() {
+    	alert(cscr)
+        if (!cscr) {
+            alert('分数不能为空！')
+            return
+        }
+
+        var value = "0";
+
+        var callArgs = [];
+        callArgs.push(initKey);
+        callArgs.push(cscr);
+        nebPay.call(dappAddress, value, "setScore", JSON.stringify(callArgs), { //使用nebpay的call接口去调用合约,
+            listener: cbPush
+        });
+    }
+
+    function cbPush(resp) {
+        console.log("response of push: " + resp);
+
+    }
+
+    //产生随机数函数
+    function RndNum(n) {
+        var rnd = "";
+        for (var i = 0; i < n; i++)
+            rnd += Math.floor(Math.random() * 10);
+        return rnd;
+    }
+
+
+
+    $('#uploadScore').on('click', function() {
+        uploadScore()
+        $('#uploadScore').blur()
+    });
+
+})
+</script>
+</body>
+
+</html>

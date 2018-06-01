@@ -1,0 +1,50 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+
+.wrapper {
+       width: 960px;
+    float: left;
+    line-height: 36px;
+    text-align: center;
+    color: #999;
+}
+
+canvas {
+    display: block;
+    background: #000;
+}
+
+.mod-botton {
+    height: 32px;
+    padding: 15px 0;
+    text-align: center;
+}
+button.active {
+    background: black;
+    color: white;
+}
+
+button {
+    width: 100%;
+    height: 55px;
+    background: white;
+    border: 3px solid black;
+    margin-right: 10px;
+    cursor: pointer;
+}
+#noExtension {
+    padding-top: 200px;
+    text-align: center;
+    font-size: 22px;
+    position: absolute;
+    width: 100%;
+    display: none;
+    z-index: 999999999;
+    background-color: #fff;
+    border: 1px solid #000;
+    width: 100%;
+    height: 200px;
+    line-height: 200px;
+}
